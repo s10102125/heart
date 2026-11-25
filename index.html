@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3ec">
+  <title>暖心橋｜讓關心重新靠近</title>
+  <style>
+    :root{--ink:#26352f;--muted:#68766e;--paper:#f7f3ec;--card:#fffdf8;--green:#47745d;--green2:#e7f0e8;--orange:#bd704b;--line:#e8e1d6;--shadow:0 10px 30px #26352f0c}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;font-size:18px;line-height:1.65}
+    button,input,textarea{font:inherit} button{cursor:pointer}
+    .wrap{width:min(1080px,calc(100% - 32px));margin:auto}
+    header{padding:28px 0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px}.logo{width:52px;height:52px;border-radius:18px;background:var(--green2);display:grid;place-items:center;font-size:28px}
+    h1{font-size:clamp(26px,4vw,36px);line-height:1.2;margin:0}.sub{color:var(--muted);margin:5px 0 0;font-size:16px}
+    .date{color:var(--muted);font-size:15px;text-align:right}
+    .welcome{background:#eaf0e8;border-radius:26px;padding:28px 30px;margin:12px 0 22px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .welcome h2{font-size:clamp(24px,4vw,32px);margin:0 0 6px}.welcome p{margin:0;color:#53665a}.welcome .sun{font-size:56px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:22px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}
+    .card h3{font-size:23px;margin:0 0 5px}.desc{color:var(--muted);font-size:16px;margin:0 0 17px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px}.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:700;background:var(--green);color:white;min-height:52px}.btn.secondary{background:var(--green2);color:var(--ink)}.btn.warm{background:#f5e8df;color:#7b452d}.btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #d59b6f;outline-offset:3px}
+    .people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.person{padding:14px;border:1px solid var(--line);border-radius:15px;background:white;text-align:left;color:var(--ink);font-weight:700}.person span{display:block;color:var(--muted);font-size:14px;font-weight:400}
+    textarea,input{width:100%;border:1px solid #dcd5ca;border-radius:13px;padding:13px 14px;background:#fff;font-size:17px;color:var(--ink)}textarea{min-height:110px;resize:vertical}.field{margin:12px 0}.field label{display:block;font-weight:700;margin-bottom:6px}
+    .task{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{width:23px;height:23px;margin-top:5px;accent-color:var(--green)}.task small{display:block;color:var(--muted)}
+    .safety{background:#fff7ef;border:1px solid #f0dfd1}.safety .btn{background:var(--orange)}
+    .notice{font-size:14px;color:var(--muted);margin:18px 0 30px;text-align:center}
+    .status{min-height:24px;color:var(--green);font-size:15px;margin-top:8px}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}.welcome{padding:22px}.welcome .sun{font-size:42px}.date{display:none}.card{padding:20px}.people{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true">🌉</div><div><h1>暖心橋</h1><p class="sub">讓關心重新靠近，讓每份想念都有回音。</p></div></div>
+      <div class="date" id="today"></div>
+    </header>
+
+    <section class="welcome">
+      <div><h2>今天，也有人惦記著您。❤️</h2><p>想找人聊聊、分享一段回憶，或出門走走嗎？我們一起開始。</p></div>
+      <div class="sun" aria-hidden="true">☀️</div>
+    </section>
+
+    <main class="grid">
+      <section class="card">
+        <h3>📞 想念的人，現在就聯絡</h3>
+        <p class="desc">不用想太多，選一位想說說話的人吧。</p>
+        <div class="people">
+          <button class="person" data-contact="child">👨‍👩‍👧 家人<span>打電話給家人</span></button>
+          <button class="person" data-contact="friend">🌷 好朋友<span>打電話給朋友</span></button>
+        </div>
+        <div class="field"><label for="familyPhone">家人電話</label><input id="familyPhone" type="tel" placeholder="例如：0912345678"></div>
+        <div class="field"><label for="friendPhone">朋友電話</label><input id="friendPhone" type="tel" placeholder="例如：0912345678"></div>
+        <button class="btn secondary" id="savePhones">儲存聯絡電話</button>
+        <p class="status" id="phoneStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h3>📖 把回憶分享出去</h3>
+        <p class="desc">說一段以前的故事，讓家人多認識您一點。</p>
+        <div class="field"><label for="memory">今天想分享的回憶</label><textarea id="memory" placeholder="例如：以前過年時，我最喜歡和家人一起準備年菜……"></textarea></div>
+        <div class="actions"><button class="btn secondary" id="voiceBtn">🎙️ 用說的輸入</button><button class="btn" id="shareMemory">分享給家人</button></div>
+        <p class="status" id="memoryStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="card">
+        <h3>🌱 本週，和真人見個面</h3>
+        <p class="desc">小小的一步就很好，不需要一次完成很多事。</p>
+        <div id="tasks">
+          <label class="task"><input type="checkbox" data-task="neighbor"><span>和鄰居打聲招呼<small>從一句「早安」開始</small></span></label>
+          <label class="task"><input type="checkbox" data-task="family"><span>和家人通話或見面<small>聊聊最近的生活</small></span></label>
+          <label class="task"><input type="checkbox" data-task="community"><span>參加一次社區活動<small>散步、共餐或健康活動都可以</small></span></label>
+        </div>
+        <p class="status" id="taskStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="card safety">
+        <h3>🧡 需要真人幫忙嗎？</h3>
+        <p class="desc">如果覺得不舒服、害怕，或遇到困難，請聯絡信任的人。</p>
+        <div class="field"><label for="emergencyPhone">緊急聯絡人電話</label><input id="emergencyPhone" type="tel" placeholder="請先設定一位信任的人"></div>
+        <button class="btn warm" id="callEmergency">☎️ 聯絡我的緊急聯絡人</button>
+        <p class="status" id="safetyStatus" aria-live="polite"></p>
+      </section>
+    </main>
+    <p class="notice">暖心橋原型展示｜目前資料只儲存在這台裝置的瀏覽器。電話撥打與分享功能會依裝置支援情況運作；本原型尚未連接 AI、家人帳號或真人異常通報服務。</p>
+  </div>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const read = (key, fallback = "") => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
+    const write = (key, value) => { try { localStorage.setItem(key, value); return true; } catch { return false; } };
+    $("today").textContent = new Intl.DateTimeFormat("zh-TW",{year:"numeric",month:"long",day:"numeric",weekday:"long"}).format(new Date());
+    $("familyPhone").value = read("heart-family-phone");
+    $("friendPhone").value = read("heart-friend-phone");
+    $("emergencyPhone").value = read("heart-emergency-phone");
+    $("savePhones").addEventListener("click", () => {
+      write("heart-family-phone",$("familyPhone").value.trim());
+      write("heart-friend-phone",$("friendPhone").value.trim());
+      write("heart-emergency-phone",$("emergencyPhone").value.trim());
+      $("phoneStatus").textContent = "聯絡電話已儲存在這台裝置。";
+    });
+    document.querySelectorAll("[data-contact]").forEach(button => button.addEventListener("click", () => {
+      const phone = button.dataset.contact === "child" ? $("familyPhone").value.trim() : $("friendPhone").value.trim();
+      if (!phone) { $("phoneStatus").textContent = "請先填寫並儲存聯絡電話。"; return; }
+      location.href = "tel:" + phone.replace(/[^+\d]/g,"");
+    }));
+    $("callEmergency").addEventListener("click", () => {
+      const phone = $("emergencyPhone").value.trim();
+      if (!phone) { $("safetyStatus").textContent = "請先填寫緊急聯絡人的電話，再按「儲存聯絡電話」。"; return; }
+      location.href = "tel:" + phone.replace(/[^+\d]/g,"");
+    });
+    document.querySelectorAll("[data-task]").forEach(box => {
+      box.checked = read("heart-task-" + box.dataset.task) === "yes";
+      box.addEventListener("change", () => {
+        write("heart-task-" + box.dataset.task, box.checked ? "yes" : "no");
+        const done = [...document.querySelectorAll("[data-task]")].filter(item => item.checked).length;
+        $("taskStatus").textContent = done === 3 ? "太好了！本週三個小任務都完成了。❤️" : "已完成 " + done + " / 3 個小任務，慢慢來就好。";
+      });
+    });
+    $("voiceBtn").addEventListener("click", () => {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) { $("memoryStatus").textContent = "這個瀏覽器暫不支援語音輸入，您可以直接打字分享。"; return; }
+      const recognition = new SpeechRecognition();
+      recognition.lang = "zh-TW";
+      recognition.onresult = event => { $("memory").value += event.results[0][0].transcript; $("memoryStatus").textContent = "語音已轉成文字，記得確認內容喔。"; };
+      recognition.onerror = () => { $("memoryStatus").textContent = "沒有聽清楚，請再試一次或直接打字。"; };
+      recognition.start();
+      $("memoryStatus").textContent = "正在聆聽，請開始說話……";
+    });
+    $("shareMemory").addEventListener("click", async () => {
+      const story = $("memory").value.trim();
+      if (!story) { $("memoryStatus").textContent = "先寫下一段想分享的回憶吧。"; return; }
+      const message = "想和你分享一段回憶：\n\n" + story + "\n\n—— 暖心橋";
+      try {
+        if (navigator.share) { await navigator.share({title:"我想分享一段回憶",text:message}); $("memoryStatus").textContent = "已開啟分享功能，選擇想分享的家人或朋友即可。"; }
+        else if (navigator.clipboard) { await navigator.clipboard.writeText(message); $("memoryStatus").textContent = "回憶內容已複製，可以貼到 LINE 傳給家人。"; }
+        else { $("memoryStatus").textContent = "目前裝置不支援快速分享，請手動複製這段文字。"; }
+      } catch (error) { if (error.name !== "AbortError") $("memoryStatus").textContent = "分享沒有完成，您可以再試一次。"; }
+    });
+  </script>
+</body>
+</html>
