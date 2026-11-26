@@ -20,6 +20,31 @@ service cloud.firestore {
       allow delete: if owner(uid);
     }
     match /followups/{uid}/entries/{entryId} { allow read, write: if owner(uid); }
+    function familyOwner(uid) {
+      return owner(uid) &&
+        get(/databases/$(database)/documents/users/$(uid)).data.role == 'family';
+    }
+    match /proxyCare/{uid}/profiles/{profileId} {
+      allow read, delete: if familyOwner(uid);
+      allow create: if familyOwner(uid) &&
+        request.resource.data.keys().hasOnly(['name','relation','consent','createdAt']) &&
+        request.resource.data.name is string && request.resource.data.name.size() <= 60 &&
+        request.resource.data.relation is string && request.resource.data.relation.size() <= 40 &&
+        request.resource.data.consent == true && request.resource.data.createdAt == request.time;
+      match /records/{recordId} {
+        allow read, delete: if familyOwner(uid) &&
+          exists(/databases/$(database)/documents/proxyCare/$(uid)/profiles/$(profileId));
+        allow create: if familyOwner(uid) &&
+          exists(/databases/$(database)/documents/proxyCare/$(uid)/profiles/$(profileId)) &&
+          request.resource.data.keys().hasOnly(['kind','when','text','actorUid','actorName','createdAt']) &&
+          request.resource.data.actorUid == request.auth.uid &&
+          request.resource.data.actorName is string && request.resource.data.actorName.size() <= 60 &&
+          request.resource.data.kind in ['就醫紀錄','回診安排','用藥提醒','血糖紀錄','血壓紀錄','照護觀察'] &&
+          request.resource.data.when is string && request.resource.data.when.size() <= 30 &&
+          request.resource.data.text is string && request.resource.data.text.size() <= 3000 &&
+          request.resource.data.createdAt == request.time;
+      }
+    }
     match /{document=**} { allow read, write: if false; }
   }
 }
