@@ -2,28 +2,39 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function owner(uid) { return request.auth != null && request.auth.uid == uid; }
-    function granted(uid) {
-      return request.auth != null &&
-        exists(/databases/$(database)/documents/visits/$(uid)/grants/$(request.auth.uid));
+    function hasRole(uid, role) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role == role;
     }
-    match /users/{uid} { allow read, write: if owner(uid); }
+    function elderOwner(uid) { return owner(uid) && hasRole(uid, 'elder'); }
+    function familyOwner(uid) { return owner(uid) && hasRole(uid, 'family'); }
+    function validProfile(data) {
+      return data.keys().hasOnly(['name', 'role']) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 60 &&
+        data.role in ['elder', 'family'];
+    }
+    function granted(uid) {
+      return request.auth != null && hasRole(request.auth.uid, 'family') &&
+        hasRole(uid, 'elder') && exists(/databases/$(database)/documents/visits/$(uid)/grants/$(request.auth.uid));
+    }
+    match /users/{uid} {
+      allow get: if owner(uid);
+      allow create: if owner(uid) && validProfile(request.resource.data);
+      allow update: if owner(uid) && validProfile(request.resource.data) &&
+        request.resource.data.role == resource.data.role;
+    }
     match /health/{uid}/{document=**} { allow read, write: if owner(uid); }
     match /visits/{uid}/grants/{familyUid} {
-      allow read, delete: if owner(uid);
-      allow create, update: if owner(uid) && familyUid != uid &&
+      allow read, delete: if elderOwner(uid);
+      allow create, update: if elderOwner(uid) && familyUid != uid && hasRole(familyUid, 'family') &&
         request.resource.data.keys().hasOnly(['name']) &&
         request.resource.data.name is string && request.resource.data.name.size() <= 60;
     }
     match /visits/{uid}/entries/{entryId} {
-      allow read: if owner(uid) || (granted(uid) && resource.data.shared == true);
-      allow create, update: if owner(uid) && request.resource.data.shared is bool;
-      allow delete: if owner(uid);
+      allow read: if elderOwner(uid) || (granted(uid) && resource.data.shared == true);
+      allow create, update: if elderOwner(uid) && request.resource.data.shared is bool;
+      allow delete: if elderOwner(uid);
     }
     match /followups/{uid}/entries/{entryId} { allow read, write: if owner(uid); }
-    function familyOwner(uid) {
-      return owner(uid) &&
-        get(/databases/$(database)/documents/users/$(uid)).data.role == 'family';
-    }
     match /proxyCare/{uid}/profiles/{profileId} {
       allow read, delete: if familyOwner(uid);
       allow create: if familyOwner(uid) &&
@@ -38,6 +49,7 @@ service cloud.firestore {
           exists(/databases/$(database)/documents/proxyCare/$(uid)/profiles/$(profileId)) &&
           request.resource.data.keys().hasOnly(['kind','when','text','actorUid','actorName','createdAt']) &&
           request.resource.data.actorUid == request.auth.uid &&
+          request.resource.data.actorName == get(/databases/$(database)/documents/users/$(uid)).data.name &&
           request.resource.data.actorName is string && request.resource.data.actorName.size() <= 60 &&
           request.resource.data.kind in ['就醫紀錄','回診安排','用藥提醒','血糖紀錄','血壓紀錄','照護觀察'] &&
           request.resource.data.when is string && request.resource.data.when.size() <= 30 &&
